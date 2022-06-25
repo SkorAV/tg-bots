@@ -7,6 +7,10 @@ class TgBot
     private bool $debugMode = false;
     private array $data;
 
+    const FORMAT_MARKDOWNV2 = 'MarkdownV2';
+    const FORMAT_HTML = 'HTML';
+    const FORMAT_DEFAULT = null;
+
     public function __construct(string $botSecret, ?LoggerInterface $logger)
     {
         $this->baseURL = 'https://api.telegram.org/bot' . $botSecret . '/';
@@ -42,13 +46,15 @@ class TgBot
         return $this;
     }
 
-    public function addText(string $message, ?array $entities = null): self
+    public function addText(string $message, ?array $entities = null, ?string $format = null): self
     {
-        $this->data['text'] = htmlspecialchars($message);
+        $this->data['text'] = $message;
 
 
         if (!empty($entities)) {
             $this->data['entities'] = json_encode($entities);
+        } else if (null !== $format) {
+            $this->data['parse_mode'] = $format;
         }
 
         return $this;
@@ -87,7 +93,7 @@ class TgBot
         return $this;
     }
 
-    public function send(): bool
+    public function send(): stdClass
     {
         if (empty($this->data['text'])) {
             throw new \http\Exception\BadMethodCallException('No message to send! Call "addText()" first.');
@@ -96,21 +102,40 @@ class TgBot
         return $this->callAPI($this->baseURL . 'sendMessage', $this->data);
     }
 
-    public function answerCallbackQuery(string $queryId): bool
+    public function answerCallbackQuery(string $queryId): stdClass
     {
         return $this->callAPI($this->baseURL . 'answerCallbackQuery', ['callback_query_id' => $queryId]);
     }
 
-    private function callAPI(string $url, array $data): bool
+    public function editMessageText(string $chatId, string $messageId, string $text): stdClass
+    {
+        return $this->callAPI($this->baseURL . 'editMessageText', [
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+            'text' => $text,
+        ]);
+    }
+
+    public function editMessageReplyMarkup(string $chatId, string $messageId, array $keyboard): stdClass
+    {
+        return $this->callAPI($this->baseURL . 'editMessageReplyMarkup', [
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+            'reply_markup' => json_encode(['inline_keyboard' => $keyboard]),
+        ]);
+    }
+
+    private function callAPI(string $url, array $data): stdClass
     {
         $curl = curl_init($url);
         curl_setopt_array($curl, [
             CURLOPT_POST => 1,
             CURLOPT_POSTFIELDS => $data,
+            CURLOPT_RETURNTRANSFER => true,
         ]);
         $result = curl_exec($curl);
         curl_close($curl);
 
-        return $result;
+        return json_decode($result);
     }
 }
