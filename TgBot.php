@@ -7,9 +7,9 @@ class TgBot
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(string $base_url, ?LoggerInterface $logger)
+    public function __construct(string $botSecret, ?LoggerInterface $logger)
     {
-        $this->base_url = rtrim($base_url, '/') . '/';
+        $this->base_url = 'https://api.telegram.org/bot' . $botSecret . '/';
         $this->logger = $logger;
 
     }

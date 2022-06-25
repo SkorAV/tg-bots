@@ -2,7 +2,15 @@
 require_once __DIR__ . '/autoloader.php';
 
 $logger = new FileLogger(__DIR__ . '/../tmp/progress-report.log');
-$bot = new TgBot('https://api.telegram.org/bot5422534673:AAHG5_XH738UwJPYpKhA2on80Bl4dMTqsPw/', $logger);
+$db = DBAccess::connect('localhost', 'u374561970_andrii', '#Jx+u52wR*9', 'u374561970_servicepages');
+$bot_data = $db->select('
+    SELECT
+        c.value
+    FROM config c
+    WHERE c.name = ?;', ['s' => 'progress_report_bot'])
+    ->fetch_field();
+$bot_data = json_decode($bot_data);
+$bot = new TgBot($bot_data->bot_secret, $logger);
 
 $request = $bot->getUpdate();
 
