@@ -5,12 +5,12 @@ class TgBot
     protected string $baseURL;
     private LoggerInterface $logger;
     private bool $debugMode = false;
+    private array $data;
 
     public function __construct(string $botSecret, ?LoggerInterface $logger)
     {
         $this->baseURL = 'https://api.telegram.org/bot' . $botSecret . '/';
         $this->logger = $logger;
-
     }
 
     public function getUpdate(): string
@@ -25,30 +25,61 @@ class TgBot
         return $request;
     }
 
-    public function sendText(string $message, stdClass $to, ?array $keyboard, ?array $entities = null): bool
+    public function message(stdClass $to): self
     {
-        $data = [
-            'text' => htmlspecialchars($message),
-            'chat_id' => $to->id,
-        ];
+        $this->data = ['chat_id' => $to->id];
 
-        if (!empty($keyboard)) {
-            $data['reply_markup'] = json_encode([
-                'keyboard' => $keyboard,
-                'resize_keyboard' => true,
-                'one_time_keyboard' => false,
-            ]);
-        } elseif (null === $keyboard) {
-            $data['reply_markup'] = json_encode([
-                'remove_keyboard' => true,
-            ]);
-        }
+        return $this;
+    }
+
+    public function addText(string $message, ?array $entities = null): self
+    {
+        $this->data['text'] = htmlspecialchars($message);
+
 
         if (!empty($entities)) {
-            $data['entities'] = json_encode($entities);
+            $this->data['entities'] = json_encode($entities);
         }
 
-        return $this->callAPI($this->baseURL . 'sendMessage', $data);
+        return $this;
+    }
+
+    public function addKeyboard(array $keyboard, bool $resize = true, bool $oneTime = false): self
+    {
+        if (!empty($keyboard)) {
+            $this->data['reply_markup'] = json_encode([
+                'keyboard' => $keyboard,
+                'resize_keyboard' => $resize,
+                'one_time_keyboard' => $oneTime,
+            ]);
+        }
+
+        return $this;
+    }
+
+    public function addInlineKeyboard(array $keyboard): self
+    {
+        if (!empty($keyboard)) {
+            $this->data['reply_markup'] = json_encode([
+                'inline_keyboard' => $keyboard,
+            ]);
+        }
+
+        return $this;
+    }
+
+    public function removeKeyboard(): self
+    {
+        $this->data['reply_markup'] = json_encode([
+            'remove_keyboard' => true,
+        ]);
+
+        return $this;
+    }
+
+    public function send(): bool
+    {
+        return $this->callAPI($this->baseURL . 'sendMessage', $this->data);
     }
 
     private function callAPI(string $url, array $data): bool

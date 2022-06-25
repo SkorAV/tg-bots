@@ -34,15 +34,46 @@ try {
 - удосконалити володіння діловою іноземною мовою;
 - розвинути лідерські організаційні якості креативного та нестандарт-ного мислення
 Тоді ми чекаємо саме на Вас!
-TXT;
-                $bot->sendText($message, $update->message->from, [
-                    [['text' => 'Hello!'], ['text' => 'Bye!'], ['text'=> 'Nice to meet you.']],
-                    [['text' => 'Bonjour!'], ['text' => 'Au revoir!'], ['text' => 'Enchante.']],
-                ], [
-                    ["type" => "bold", "offset" => 192, "length" => 28],
-                    ["type" => "italic", "offset" => 192, "length" => 28]
-                ]);
 
+Скористайтесь меню нижче, щоб дізнатися більше.
+TXT;
+                $bot->message($update->message->from)
+                    ->addText($message, [
+                        ["type" => "bold", "offset" => 192, "length" => 28],
+                        ["type" => "italic", "offset" => 192, "length" => 28]
+                    ])
+                    ->addKeyboard([
+                        [['text' => 'Освітні програми'], ['text' => 'Переваги навчання']],
+                        [['text' => 'Контакти кафедри'], ['text' => 'Замовити зворотній зв\'язок']],
+                    ])
+                    ->send();
+
+                break;
+            case 'Освітні програми':
+                $message = <<<'TXT'
+КАФЕДРА БІЗНЕС-АНАЛІТИКИ ТА ЦИФРОВОЇ ЕКОНОМІКИ
+оголошує набір за спеціальністю
+051 «ЕКОНОМІКА» 
+на освітньо-професійні програми:
+TXT;
+
+                $bot->message($update->message->from)
+                    ->addText($message, [["type" => "bold", "offset" => 78, "length" => 15]])
+                    ->addInlineKeyboard([
+                        [
+                            ['text' => 'ЕКОНОМІЧНА КІБЕРНЕТИКА', 'callback_data' => 'ec'],
+                            ['text' => 'ЦИФРОВА ЕКОНОМІКА', 'callback_data' => 'de'],
+                            ['text' => 'МІЖНАРОДНА ЕКОНОМІКА', 'callback_data' => 'ie'],
+                        ],
+                    ])
+                    ->send();
+
+                break;
+            case 'Переваги навчання':
+                break;
+            case 'Контакти кафедри':
+                break;
+            case 'Замовити зворотній зв\'язок':
                 break;
             case '/stop':
                 unset($known_users[$update->message->from->id]);
