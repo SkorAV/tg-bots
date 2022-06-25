@@ -25,14 +25,14 @@ class TgBot
         return $request;
     }
 
-    public function sendText(string $message, stdClass $to, ?array $keyboard): bool
+    public function sendText(string $message, stdClass $to, ?array $keyboard, ?array $entities = null): bool
     {
         $data = [
             'text' => htmlspecialchars($message),
             'chat_id' => $to->id,
         ];
 
-        if (is_array($keyboard)) {
+        if (!empty($keyboard)) {
             $data['reply_markup'] = json_encode([
                 'keyboard' => $keyboard,
                 'resize_keyboard' => true,
@@ -42,6 +42,10 @@ class TgBot
             $data['reply_markup'] = json_encode([
                 'remove_keyboard' => true,
             ]);
+        }
+
+        if (!empty($entities)) {
+            $data['entities'] = json_encode($entities);
         }
 
         return $this->callAPI($this->baseURL . 'sendMessage', $data);
