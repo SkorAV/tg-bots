@@ -2,19 +2,19 @@
 require_once __DIR__ . '/autoloader.php';
 
 $logger = new FileLogger(__DIR__ . '/../tmp/progress-report.log');
-$db = DBAccess::connect('localhost', 'u374561970_andrii', '#Jx+u52wR*9', 'u374561970_servicepages');
-$bot_data = $db->select('
-    SELECT
-        c.value
-    FROM config c
-    WHERE c.name = ?;', ['s' => 'progress_report_bot'])
-    ->fetch_field();
-$bot_data = json_decode($bot_data);
-$bot = new TgBot($bot_data->bot_secret, $logger);
-
-$request = $bot->getUpdate();
 
 try {
+    $db = DBAccess::connect('localhost', 'u374561970_andrii', '#Jx+u52wR*9', 'u374561970_servicepages');
+    $bot_data = $db->select('
+        SELECT
+            c.value
+        FROM config c
+        WHERE c.name = ?;', ['s' => 'progress_report_bot'])
+        ->fetch_field();
+    $bot_data = json_decode($bot_data);
+    $bot = new TgBot($bot_data->bot_secret, $logger);
+
+    $request = $bot->getUpdate();
     $update = json_decode($request);
     $known_users = json_decode(file_get_contents(__DIR__ . '/../tmp/progress-report-users.json'), true);
     $known_users_updated = false;
