@@ -96,6 +96,11 @@ class TgBot
         return $this->callAPI($this->baseURL . 'sendMessage', $this->data);
     }
 
+    public function answerCallbackQuery(string $queryId): bool
+    {
+        return $this->callAPI($this->baseURL . 'answerCallbackQuery', ['callback_query_id' => $queryId]);
+    }
+
     private function callAPI(string $url, array $data): bool
     {
         $curl = curl_init($url);

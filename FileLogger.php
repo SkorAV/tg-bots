@@ -20,6 +20,6 @@ class FileLogger implements LoggerInterface
 
     public function log($message)
     {
-        file_put_contents($this->fileName, '[' .date('Y-m-d H:i:s') . '] ' . $message,FILE_APPEND);
+        file_put_contents($this->fileName, '[' .date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL,FILE_APPEND);
     }
 }
