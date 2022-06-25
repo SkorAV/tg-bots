@@ -2,14 +2,12 @@
 
 class TgBot
 {
-    /** @var string */
-    protected $base_url;
-    /** @var LoggerInterface */
-    private $logger;
+    protected string $baseURL;
+    private LoggerInterface $logger;
 
     public function __construct(string $botSecret, ?LoggerInterface $logger)
     {
-        $this->base_url = 'https://api.telegram.org/bot' . $botSecret . '/';
+        $this->baseURL = 'https://api.telegram.org/bot' . $botSecret . '/';
         $this->logger = $logger;
 
     }
@@ -22,7 +20,7 @@ class TgBot
         return $request;
     }
 
-    public function sendText(string $message, stdClass $to, array|false|null $keyboard, bool $removeKeyboard = false): bool
+    public function sendText(string $message, stdClass $to, ?array $keyboard): bool
     {
         $data = [
             'text' => htmlspecialchars($message),
@@ -35,13 +33,13 @@ class TgBot
                 'resize_keyboard' => true,
                 'one_time_keyboard' => true,
             ]);
-        } elseif (false === $keyboard) {
+        } elseif (null === $keyboard) {
             $data['reply_markup'] = json_encode([
                 'remove_keyboard' => true,
             ]);
         }
 
-        return $this->callAPI($this->base_url . 'sendMessage', $data);
+        return $this->callAPI($this->baseURL . 'sendMessage', $data);
     }
 
     private function callAPI(string $url, array $data): bool
