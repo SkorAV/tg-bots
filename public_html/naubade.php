@@ -47,7 +47,7 @@ TXT;
 
                 break;
             default:
-                $bot->sendText($update->message->text, $update->message->from, null, null);
+                $bot->sendText($update->message->text, $update->message->from, null);
 
                 break;
         }

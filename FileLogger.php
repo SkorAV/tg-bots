@@ -2,8 +2,7 @@
 
 class FileLogger implements LoggerInterface
 {
-    /** @var string */
-    private $fileName;
+    private string $fileName;
 
     public function __construct(string $fileName) {
         if (!file_exists($fileName)) {

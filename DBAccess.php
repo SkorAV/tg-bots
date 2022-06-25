@@ -8,16 +8,12 @@ class DBAccess
     {
     }
 
-    private function __sleep()
-    {
-    }
-
-    private function __wakeup()
-    {
-    }
-
     public static function connect(string $hostname, string $username, string $password, string $database): DBAccess
     {
+        if (self::$connection instanceof mysqli) {
+            return new self();
+        }
+
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
         $connection = new mysqli($hostname, $username, $password, $database);
         $connection->set_charset('utf8mb4');
