@@ -60,10 +60,10 @@ TXT;
 
                 $bot->message($update->message->from)
                     ->addText($message, [["type" => "bold", "offset" => 78, "length" => 15]])
-                    ->addInlineKeyboard([
-                        [['text' => 'ЕКОНОМІЧНА КІБЕРНЕТИКА', 'callback_data' => 'ec']],
-                        [['text' => 'ЦИФРОВА ЕКОНОМІКА', 'callback_data' => 'de']],
-                        [['text' => 'МІЖНАРОДНА ЕКОНОМІКА', 'callback_data' => 'ie']],
+                    ->addKeyboard([
+                        [['text' => 'ЕКОНОМІЧНА КІБЕРНЕТИКА']],
+                        [['text' => 'ЦИФРОВА ЕКОНОМІКА']],
+                        [['text' => 'МІЖНАРОДНА ЕКОНОМІКА']],
                     ])
                     ->send();
 
@@ -74,25 +74,7 @@ TXT;
                 break;
             case 'Замовити зворотній зв\'язок':
                 break;
-            case '/stop':
-                unset($known_users[$update->message->from->id]);
-                $known_users_updated = true;
-
-                break;
-            default:
-                $bot->message($update->message->from)
-                    ->addText($update->message->text)
-                    ->send();
-
-                break;
-        }
-    }
-
-    if (!empty($update->callback_query)) {
-        switch ($update->callback_query->data) {
-            case 'ec':
-                $bot->answerCallbackQuery($update->callback_query->id);
-
+            case 'ЕКОНОМІЧНА КІБЕРНЕТИКА':
                 $message = <<<'TXT'
 ОСВІТНЬО-ПРОФЕСІЙНА ПРОГРАМА
 «ЕКОНОМІЧНА КІБЕРНЕТИКА»
@@ -118,9 +100,7 @@ TXT;
                     ]])
                     ->send();
                 break;
-            case 'de':
-                $bot->answerCallbackQuery($update->callback_query->id);
-
+            case 'ЦИФРОВА ЕКОНОМІКА':
                 $message = <<<'TXT'
 ОСВІТНЬО-ПРОФЕСІЙНА ПРОГРАМА
 «ЦИФРОВА ЕКОНОМІКА»
@@ -147,9 +127,7 @@ TXT;
                     ]])
                     ->send();
                 break;
-            case 'ie':
-                $bot->answerCallbackQuery($update->callback_query->id);
-
+            case 'МІЖНАРОДНА ЕКОНОМІКА':
                 $message = <<<'TXT'
 ОСВІТНЬО-ПРОФЕСІЙНА ПРОГРАМА
 «МІЖНАРОДНА ЕКОНОМІКА»
@@ -175,6 +153,22 @@ TXT;
                     ]])
                     ->send();
                 break;
+            case '/stop':
+                unset($known_users[$update->message->from->id]);
+                $known_users_updated = true;
+
+                break;
+            default:
+                $bot->message($update->message->from)
+                    ->addText($update->message->text)
+                    ->send();
+
+                break;
+        }
+    }
+
+    if (!empty($update->callback_query)) {
+        switch ($update->callback_query->data) {
             default:
                 $bot->answerCallbackQuery($update->callback_query->id);
                 break;
