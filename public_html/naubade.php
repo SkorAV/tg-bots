@@ -38,7 +38,10 @@ TXT;
                 $bot->sendText($message, $update->message->from, [
                     [['text' => 'Hello!'], ['text' => 'Bye!'], ['text'=> 'Nice to meet you.']],
                     [['text' => 'Bonjour!'], ['text' => 'Au revoir!'], ['text' => 'Enchante.']],
-                ], [["type" => "bold", "offset" => 192, "length" => 28]]);
+                ], [
+                    ["type" => "bold", "offset" => 192, "length" => 28],
+                    ["type" => "italic", "offset" => 192, "length" => 28]
+                ]);
 
                 break;
             case '/stop':
