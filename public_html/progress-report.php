@@ -9,9 +9,10 @@ try {
         SELECT
             c.value
         FROM config c
-        WHERE c.name = ?;', ['s' => 'progress_report_bot'])
-        ->fetch_field();
-    $bot_data = json_decode($bot_data);
+        WHERE c.name = ?;',
+        ['s' => 'progress_report_bot']
+    )->fetch_row();
+    $bot_data = json_decode($bot_data[0]);
     $bot = new TgBot($bot_data->bot_secret, $logger);
 
     $request = $bot->getUpdate();
@@ -38,6 +39,11 @@ try {
                 break;
             case '/stop':
                 unset($known_users[$update->message->from->id]);
+                $known_users_updated = true;
+
+                break;
+            default:
+                $bot->sendText($update->message->text, $update->message->from, null);
 
                 break;
         }

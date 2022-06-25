@@ -4,6 +4,7 @@ class TgBot
 {
     protected string $baseURL;
     private LoggerInterface $logger;
+    private bool $debugMode = false;
 
     public function __construct(string $botSecret, ?LoggerInterface $logger)
     {
@@ -15,7 +16,11 @@ class TgBot
     public function getUpdate(): string
     {
         $request = file_get_contents('php://input');
-        $this->logger->log($request);
+
+        if ($this->debugMode)
+        {
+            $this->logger->log($request);
+        }
 
         return $request;
     }
