@@ -81,7 +81,9 @@ TXT;
 
                 break;
             default:
-                $bot->sendText($update->message->text, $update->message->from, null);
+                $bot->message($update->message->from)
+                    ->addText($update->message->text)
+                    ->send();
 
                 break;
         }

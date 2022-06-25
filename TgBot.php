@@ -79,6 +79,10 @@ class TgBot
 
     public function send(): bool
     {
+        if (empty($this->data['text'])) {
+            throw new \http\Exception\BadMethodCallException('No message to send! Call "addText()" first.');
+        }
+
         return $this->callAPI($this->baseURL . 'sendMessage', $this->data);
     }
 
