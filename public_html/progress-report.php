@@ -1,55 +1,45 @@
 <?php
-const BASE_URL = 'https://api.telegram.org/bot5422534673:AAHG5_XH738UwJPYpKhA2on80Bl4dMTqsPw/';
+require_once __DIR__ . '/autoloader.php';
 
-$request = file_get_contents('php://input');
-file_put_contents(__DIR__ . '/../tmp/progress-report.log', $request . PHP_EOL, FILE_APPEND);
+$logger = new FileLogger(__DIR__ . '/../tmp/progress-report.log');
+$bot = new TgBot('https://api.telegram.org/bot5422534673:AAHG5_XH738UwJPYpKhA2on80Bl4dMTqsPw/', $logger);
+
+$request = $bot->getUpdate();
 
 try {
-    $update = json_decode($request, true);
+    $update = json_decode($request);
     $known_users = json_decode(file_get_contents(__DIR__ . '/../tmp/progress-report-users.json'), true);
     $known_users_updated = false;
 
-    if (empty($update['message']['text'])) {
-        throw new RuntimeException('The update is invalid!');
-    }
+    if (!empty($update->message)) {
+        switch ($update->message->text) {
+            case '/start':
+                if (!empty($known_users[$update->message->from->id])) {
+                    $bot->sendText('You are already registered here!', $update->message->from, null);
 
-    switch ($update['message']['text']) {
-        case '/start':
-            if (!empty($known_users[$update['message']['from']['id']])) {
-                send_message(BASE_URL, $update['message']['from'], 'You are already registered here!');
+                    break;
+                }
+
+                $known_users[$update->message->from->id] = $update->message->from;
+                $known_users_updated = true;
+                $bot->sendText("Welcome!\nPlease, choose an action from the menu.", $update->message->from, [
+                    [['text' => 'Hello!'], ['text' => 'Bye!'], ['text'=> 'Nice to meet you.']],
+                    [['text' => 'Bonjour!'], ['text' => 'Au revoir!'], ['text' => 'Enchante.']],
+                ]);
 
                 break;
-            }
+            case '/stop':
+                unset($known_users[$update->message->from->id]);
 
-            $known_users[$update['message']['from']['id']] = $update['message']['from'];
-            $known_users_updated = true;
-            send_message(BASE_URL, $update['message']['from'], 'Welcome!');
-
-            break;
-        case '/stop':
-            unset($known_users[$update['message']['from']['id']]);
-
-            break;
+                break;
+        }
     }
 
     if ($known_users_updated) {
         file_put_contents(__DIR__ . '/../tmp/progress-report-users.json', json_encode($known_users));
     }
 } catch (Throwable $e) {
-    file_put_contents(__DIR__ . '/../tmp/progress-report.log', '[' .date('Y-m-d H:i:s') . '] ' . $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL, FILE_APPEND);
-}
-
-function send_message($url, $user, $message) {
-    $curl = curl_init($url . 'sendMessage');
-    curl_setopt_array($curl, [
-        CURLOPT_POST => 1,
-        CURLOPT_POSTFIELDS => [
-            'chat_id' => $user['id'],
-            'text' => $message,
-        ],
-    ]);
-    curl_exec($curl);
-    curl_close($curl);
+    $logger->log($e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL);
 }
 
 exit;
