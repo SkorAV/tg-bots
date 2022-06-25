@@ -36,7 +36,7 @@ class TgBot
             $data['reply_markup'] = json_encode([
                 'keyboard' => $keyboard,
                 'resize_keyboard' => true,
-                'one_time_keyboard' => true,
+                'one_time_keyboard' => false,
             ]);
         } elseif (null === $keyboard) {
             $data['reply_markup'] = json_encode([
