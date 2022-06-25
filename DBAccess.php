@@ -2,7 +2,7 @@
 
 class DBAccess
 {
-    protected static mysqli $connection;
+    protected static ?mysqli $connection = null;
 
     private function __construct()
     {
