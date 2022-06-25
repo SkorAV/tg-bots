@@ -14,6 +14,7 @@ try {
     )->fetch_row();
     $bot_data = json_decode($bot_data[0]);
     $bot = new TgBot($bot_data->bot_secret, $logger);
+    $bot->debugModeEnable();
 
     $request = $bot->getUpdate();
     $update = json_decode($request);
@@ -45,7 +46,7 @@ TXT;
                     ->addKeyboard([
                         [['text' => 'Освітні програми'], ['text' => 'Переваги навчання']],
                         [['text' => 'Контакти кафедри'], ['text' => 'Замовити зворотній зв\'язок']],
-                    ])
+                    ], true, true)
                     ->send();
 
                 break;
@@ -60,11 +61,9 @@ TXT;
                 $bot->message($update->message->from)
                     ->addText($message, [["type" => "bold", "offset" => 78, "length" => 15]])
                     ->addInlineKeyboard([
-                        [
-                            ['text' => 'ЕКОНОМІЧНА КІБЕРНЕТИКА', 'callback_data' => 'ec'],
-                            ['text' => 'ЦИФРОВА ЕКОНОМІКА', 'callback_data' => 'de'],
-                            ['text' => 'МІЖНАРОДНА ЕКОНОМІКА', 'callback_data' => 'ie'],
-                        ],
+                        [['text' => 'ЕКОНОМІЧНА КІБЕРНЕТИКА', 'callback_data' => 'ec']],
+                        [['text' => 'ЦИФРОВА ЕКОНОМІКА', 'callback_data' => 'de']],
+                        [['text' => 'МІЖНАРОДНА ЕКОНОМІКА', 'callback_data' => 'ie']],
                     ])
                     ->send();
 

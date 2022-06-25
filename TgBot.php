@@ -13,6 +13,16 @@ class TgBot
         $this->logger = $logger;
     }
 
+    public function debugModeEnable(): void
+    {
+        $this->debugMode = true;
+    }
+
+    public function debugModeDisable(): void
+    {
+        $this->debugMode = false;
+    }
+
     public function getUpdate(): string
     {
         $request = file_get_contents('php://input');
