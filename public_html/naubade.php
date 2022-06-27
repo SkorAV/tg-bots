@@ -20,11 +20,15 @@ try {
     $update = json_decode($request);
     $knownUsers = json_decode(file_get_contents(__DIR__ . '/../tmp/naubade-users.json'), true);
     $knownUsersUpdated = false;
+    $knownUser = false;
 
     if (!empty($update->message)) {
+        $knownUser = !empty($knownUsers[$update->message->from->id]['first_name']);
+        $logger->log('User ' . $update->message->from->id . ' known: ' . ($knownUser ? 'yes' : 'no'));
+
         switch ($update->message->text) {
             case '/start':
-                if (empty($knownUsers[$update->message->from->id])) {
+                if (!$knownUser) {
                     $knownUsers[$update->message->from->id] = $update->message->from;
                     $knownUsersUpdated = true;
                 }
@@ -51,6 +55,10 @@ TXT;
 
                 break;
             case 'Освітні програми':
+                if (!$knownUser) {
+                    break;
+                }
+
                 $message = <<<'TXT'
 КАФЕДРА БІЗНЕС-АНАЛІТИКИ ТА ЦИФРОВОЇ ЕКОНОМІКИ
 оголошує набір за спеціальністю
@@ -72,6 +80,10 @@ TXT;
 
                 break;
             case 'Переваги навчання':
+                if (!$knownUser) {
+                    break;
+                }
+
                 $message = <<<'TXT'
 1. Ви станете студентом високорейтингового закладу вищої освіти – Національного авіаційного університету.
 2. Ви долучитесь до економічної еліти, навчаючись у професійних та висококваліфікованих науково-педагогічних працівників університету.
@@ -97,6 +109,10 @@ TXT;
 
                 break;
             case 'Контакти кафедри':
+                if (!$knownUser) {
+                    break;
+                }
+
                 $message = <<<'TXT'
 <b>Адреса:</b>
 Україна, 03058, м. Київ,
@@ -120,16 +136,55 @@ TXT;
 
                 break;
             case 'Замовити зворотній зв\'язок':
+                if (!$knownUser) {
+                    break;
+                }
+
                 $message = <<<'TXT'
-Залиште нам телефон, і ми зв'яжемося з вами та надамо детальну інформацію щодо втупу та навчання.
+Залиште нам свій номер телефону, і ми зв'яжемося з вами та надамо детальну інформацію щодо вступу та навчання.
 TXT;
 
                 $result = $bot->message($update->message->from)
                     ->addText($message)
-                    ->addKeyboard([[[
-                        'text' => 'Залишити свій номер',
-                        'request_contact' => true,
-                    ]]])
+                    ->addKeyboard([[
+                        [
+                            'text' => 'Не залишати мій номер'
+                        ],
+                        [
+                            'text' => 'Залишити мій номер',
+                            'request_contact' => true,
+                        ],
+                    ]])
+                    ->send();
+
+                break;
+            case 'Не залишати мій номер':
+                if (!$knownUser) {
+                    break;
+                }
+
+                $message = <<<'TXT'
+Нажаль, без телефонного номера ми не зможемо зв'язатися з вами :(
+В цьому разі, будь ласка, скористайтеся меню нижче, щоб отримати більше інформації самостійно.
+TXT;
+                $bot->message($update->message->from)
+                    ->addText($message)
+                    ->addKeyboard([
+                        [['text' => 'Освітні програми'], ['text' => 'Переваги навчання']],
+                        [['text' => 'Контакти кафедри'], ['text' => 'Замовити зворотній зв\'язок']],
+                    ], true, true)
+                    ->send();
+
+                break;
+            case '/help':
+                $message = <<<'TXT'
+Цей бот призначений для отримання інформації про освітньо-професійні програми кафедри бізнес-аналітики та цифрової економіки.
+Щоб почати роботу, введіть /start
+Щоб закінцити роботу, введіть /stop
+Щоб знову побачити це повідомлення, введіть /help
+TXT;
+                $result = $bot->message($update->message->from)
+                    ->addText($message)
                     ->send();
 
                 break;
@@ -139,13 +194,34 @@ TXT;
 
                 break;
             default:
+                if (!$knownUser) {
+                    break;
+                }
+
                 if (!empty($update->message->contact->phone_number)) {
                     $knownUsers[$update->message->from->id]['phone_number'] = $update->message->contact->phone_number;
                     $knownUsersUpdated = true;
 
+                    $admins = json_decode(file_get_contents(__DIR__ . '/../tmp/naubade-admins.json'));
+                    $user = (object)$knownUsers[$update->message->from->id];
+                    $message = <<<TXT
+Отримано запит на консультацію:
+Ім'я: {$user->first_name}
+Прізвище: {$user->last_name}
+Телефон: {$user->phone_number}
+TXT;
+
+                    foreach ($admins as $adminId) {
+                        if (!empty($knownUsers[$adminId])) {
+                            $bot->message((object)$knownUsers[$adminId])
+                                ->addText($message)
+                                ->send();
+                        }
+                    }
+
                     $message = <<<'TXT'
 Дякуємо! Ми обов'язково зв'яжемося з вами найближчим часом.
-А поки, будь ласка, скористайтеся меню нижче, щоб отримати більше інформації самостійно. 
+А поки, будь ласка, скористайтеся меню нижче, щоб отримати більше інформації самостійно.
 TXT;
 
                     $bot->message($update->message->from)
@@ -160,8 +236,8 @@ TXT;
                 }
 
                 $message = <<<'TXT'
-Я поки не розумію цієї команди...
-Може тому, що в мене пока немає штучного інтелекту?
+Я не розумію цієї команди...
+Може тому, що в мене поки немає штучного інтелекту?
 Приходьте навчатися на кафедру бізнес-аналітики та цифрової економіки факультету економіки та бізнес-адміністрування НАУ і вивчайте AI, Machine Learning, VR/AR та інші сучасні цифрові технології, що допомагають бізнесу.
 TXT;
                 $bot->message($update->message->from)
@@ -173,94 +249,161 @@ TXT;
     }
 
     if (!empty($update->callback_query)) {
+        $knownUser = !empty($knownUsers[$update->callback_query->from->id]['first_name']);
         $messageId = $knownUsers[$update->callback_query->from->id]['lastMessageId'] ?? 0;
 
         switch ($update->callback_query->data) {
             case 'ec':
                 $bot->answerCallbackQuery($update->callback_query->id);
 
+                if (!$knownUser || 0 === $messageId) {
+                    break;
+                }
+
                 $message = <<<'TXT'
 ОСВІТНЬО-ПРОФЕСІЙНА ПРОГРАМА
-«ЕКОНОМІЧНА КІБЕРНЕТИКА»
+<b><i>«ЕКОНОМІЧНА КІБЕРНЕТИКА»</i></b>
 
 ВСТУПНІ КОНКУРСНІ ПРЕДМЕТИ:
 та їх значимість:
-1)	Українська мова та література (0,3)
-2)	Математика (0,3)
-3)	Історія України / іноземна мова / біологія / географія / фізика / хімія (0,3)
+<pre>│ 1 │ Українська мова │ 0,35 │
+│ 2 │ Математика      │ 0,4  │
+│ 3 │ Історія України │ 0,25 │</pre>
 
 Навчаюсь на ОПП «Економічна кібернетика» ви отримаєте кваліфікацію у сфері бізнес-аналізу (Data Scientist), оволодієте навичками організаційно-економічного управління, ефективними математичними методами аналізу і прогнозування економічних процесів з використанням сучасних інформаційних технологій. 
 
-В ході навчання ви отримаєте знання з дисциплін: «Моделювання бізнес-процесів», «Економічна кібернетика», «Оптимізаційні методи і моделі», «Введення в бізнес-аналіз», «Програмування в економіці», «Теорія ігор в економіці», «Управління проектами», «Cистеми підтримки прийняття рішень», «Ризикологія», «Python для бізнес-аналітика»
+В ході навчання ви отримаєте знання з дисциплін:
+ • «Моделювання бізнес-процесів»,
+ • «Економічна кібернетика»,
+ • «Оптимізаційні методи і моделі»,
+ • «Введення в бізнес-аналіз»,
+ • «Програмування в економіці»,
+ • «Теорія ігор в економіці»,
+ • «Управління проєктами»,
+ • «Системи підтримки прийняття рішень»,
+ • «Ризикологія»,
+ • «Python для бізнес-аналітика» тощо.
 
 Випускники працевлаштовуються у:
 Міністерство цифрової трансформації України, Міністерство фінансів України, Державну службу статистики України, Національний банк України, центри соціологічних та маркетингових досліджень, консалтингові агенції та аудиторські компанії, банки, ІТ-компанії, підприємства різних форм власності та виробничого спрямування, компанії стільникового зв’язку.
 TXT;
 
-                $bot->editMessageText($update->callback_query->from->id, $messageId, $message);
-                $bot->editMessageReplyMarkup($update->callback_query->from->id, $messageId, [[[
+                $bot->editMessageText($update->callback_query->from->id, $messageId, $message, TgBot::FORMAT_HTML);
+                $bot->editMessageReplyMarkup($update->callback_query->from->id, $messageId, [
+                    [[
                         'text' => 'Повна інформація для абітурієнтів',
                         'url' => 'https://pk.nau.edu.ua/vstup/vstup-na-1-kurs/',
-                    ]]]);
+                    ]],
+                    [[
+                        'text' => 'Освітні програми кафедри',
+                        'url' => 'http://feba.nau.edu.ua/osvitni-prohramy-za-iakymy-kafedra-vede-pidhotovku',
+                    ]],
+                ]);
+                unset($knownUsers[$update->callback_query->from->id]['lastMessageId']);
+
                 break;
             case 'de':
                 $bot->answerCallbackQuery($update->callback_query->id);
 
+                if (!$knownUser || 0 === $messageId) {
+                    break;
+                }
+
                 $message = <<<'TXT'
 ОСВІТНЬО-ПРОФЕСІЙНА ПРОГРАМА
-«ЦИФРОВА ЕКОНОМІКА»
+<b><i>«ЦИФРОВА ЕКОНОМІКА»</i></b>
 
 ВСТУПНІ КОНКУРСНІ ПРЕДМЕТИ:
 та їх значимість:
-1)	Українська мова та література (0,3)
-2)	Математика (0,3)
-3)	Історія України / іноземна мова / біологія / географія / фізика / хімія (0,3)
+<pre>│ 1 │ Українська мова │ 0,35 │
+│ 2 │ Математика      │ 0,4  │
+│ 3 │ Історія України │ 0,25 │</pre>
 
 Навчаюсь на ОПП «Цифрова економіка» ви отримаєте глибокі знання в області сучасних інформаційних технологій, опануєте сучасні програмні продукти інтелектуального аналізу даних, будете визначати перспективні напрями цифровізації та забезпечення кібербезпеки на різних рівнях управління економічними системами. 
 
-В ході навчання ви отримаєте знання з дисциплін: «Цифрова економіка: цифрова трансформація середовища і бізнесу»,  «Системний аналіз в економіці», «Електронна комерція», «Інтернет-технології в бізнесі», «Введення в аналіз Big Data», «Web-аналітика та цифровий маркетинг», «Основи машинного навчання» тощо.
+В ході навчання ви отримаєте знання з дисциплін:
+ • «Цифрова економіка: цифрова трансформація середовища і бізнесу»,
+ • «Системний аналіз в економіці», 
+ • «Електронна комерція», 
+ • «Інтернет-технології в бізнесі», 
+ • «Введення в аналіз Big Data», 
+ • «Web-аналітика та цифровий маркетинг», 
+ • «Основи машинного навчання» тощо.
 
 Випускники працевлаштовуються у:
 провідні ІТ-компанії України та світу, державні установи, Міністерство цифрової трансформації України, Міністерство економічного розвитку та торгівлі України, Національний банк України, науково-дослідні економічні інститути, компанії з управління активами та комерційні банки, страхові компанії та інвестиційні фонди, міжнародні та вітчизняні промислові підприємства.
 TXT;
 
-                $bot->editMessageText($update->callback_query->from->id, $messageId, $message);
-                $bot->editMessageReplyMarkup($update->callback_query->from->id, $messageId, [[[
-                    'text' => 'Повна інформація для абітурієнтів',
-                    'url' => 'https://pk.nau.edu.ua/vstup/vstup-na-1-kurs/',
-                ]]]);
+                $bot->editMessageText($update->callback_query->from->id, $messageId, $message, TgBot::FORMAT_HTML);
+                $bot->editMessageReplyMarkup($update->callback_query->from->id, $messageId, [
+                    [[
+                        'text' => 'Повна інформація для абітурієнтів',
+                        'url' => 'https://pk.nau.edu.ua/vstup/vstup-na-1-kurs/',
+                    ]],
+                    [[
+                        'text' => 'Освітні програми кафедри',
+                        'url' => 'http://feba.nau.edu.ua/osvitni-prohramy-za-iakymy-kafedra-vede-pidhotovku',
+                    ]],
+                ]);
+                unset($knownUsers[$update->callback_query->from->id]['lastMessageId']);
+
                 break;
             case 'ie':
                 $bot->answerCallbackQuery($update->callback_query->id);
 
+                if (!$knownUser || 0 === $messageId) {
+                    break;
+                }
+
                 $message = <<<'TXT'
 ОСВІТНЬО-ПРОФЕСІЙНА ПРОГРАМА
-«МІЖНАРОДНА ЕКОНОМІКА»
+<b><i>«МІЖНАРОДНА ЕКОНОМІКА»</i></b>
 
 ВСТУПНІ КОНКУРСНІ ПРЕДМЕТИ:
 та їх значимість:
-1)	Українська мова та література  (0,3)
-2)	Математика (0,25)
-3)	Історія України / іноземна мова / біологія / географія / фізика / хімія (0,35)
+<pre>│ 1 │ Українська мова │ 0,35 │
+│ 2 │ Математика      │ 0,4  │
+│ 3 │ Історія України │ 0,25 │</pre>
 
 Навчаюсь на ОПП «Міжнародна економіка» ви здобудете теоретичні знання та практичний досвід щодо роботи посольств, міжнародних організацій, представництв міжнародних компаній в Україні, ознайомитеся з історією, культурою, традиціями зарубіжних країн, що лежать в основі їх економічних відносин.
 
-В ході навчання ви отримаєте знання з дисциплін: «Міжнародна економіка», «Міжнародне економічне право», «Міжнародна торгівля», «Міжнародний маркетинг», «Міжнародні фінанси», «Міжнародні біржові ринки», «Міжнародний економічний аналіз», «Міжнародні стратегії економічного розвитку» тощо.
+В ході навчання ви отримаєте знання з дисциплін: 
+ • «Міжнародна економіка», 
+ • «Міжнародне економічне право», 
+ • «Міжнародна торгівля», 
+ • «Міжнародний маркетинг», 
+ • «Міжнародні фінанси», 
+ • «Міжнародні біржові ринки», 
+ • «Міжнародний економічний аналіз», 
+ • «Міжнародні стратегії економічного розвитку» тощо.
 
 Випускники працевлаштовуються у:
 державних структурах, міністерствах та відомствах, міжнародних організаціях, комерційних підприємствах, фінансових установах (банки, кредитні організації, страхові компанії), авіапідприємствах (авіакомпаніях та їх іноземних представництвах, аеропортах), торгівельно-промисловій палаті, посольствах, представницьких державних та комерційних органах за кордоном.
 TXT;
 
-                $bot->editMessageText($update->callback_query->from->id, $messageId, $message);
-                $bot->editMessageReplyMarkup($update->callback_query->from->id, $messageId, [[[
-                    'text' => 'Повна інформація для абітурієнтів',
-                    'url' => 'https://pk.nau.edu.ua/vstup/vstup-na-1-kurs/',
-                ]]]);
+                $bot->editMessageText($update->callback_query->from->id, $messageId, $message, TgBot::FORMAT_HTML);
+                $bot->editMessageReplyMarkup($update->callback_query->from->id, $messageId, [
+                    [[
+                        'text' => 'Повна інформація для абітурієнтів',
+                        'url' => 'https://pk.nau.edu.ua/vstup/vstup-na-1-kurs/',
+                    ]],
+                    [[
+                        'text' => 'Освітні програми кафедри',
+                        'url' => 'http://feba.nau.edu.ua/osvitni-prohramy-za-iakymy-kafedra-vede-pidhotovku',
+                    ]],
+                ]);
+                unset($knownUsers[$update->callback_query->from->id]['lastMessageId']);
+
                 break;
             default:
                 $bot->answerCallbackQuery($update->callback_query->id);
                 break;
         }
+    }
+
+    if (!empty($update->my_chat_member->new_chat_member->status) && $update->my_chat_member->new_chat_member->status == 'kicked') {
+        unset($knownUsers[$update->my_chat_member->from->id]);
+        $knownUsersUpdated = true;
     }
 
     if ($knownUsersUpdated) {

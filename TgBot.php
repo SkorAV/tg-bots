@@ -107,13 +107,19 @@ class TgBot
         return $this->callAPI($this->baseURL . 'answerCallbackQuery', ['callback_query_id' => $queryId]);
     }
 
-    public function editMessageText(string $chatId, string $messageId, string $text): stdClass
+    public function editMessageText(string $chatId, string $messageId, string $text, ?string $format = null): stdClass
     {
-        return $this->callAPI($this->baseURL . 'editMessageText', [
+        $data = [
             'chat_id' => $chatId,
             'message_id' => $messageId,
             'text' => $text,
-        ]);
+        ];
+
+        if (null !== $format) {
+            $data['parse_mode'] = $format;
+        }
+
+        return $this->callAPI($this->baseURL . 'editMessageText', $data);
     }
 
     public function editMessageReplyMarkup(string $chatId, string $messageId, array $keyboard): stdClass
