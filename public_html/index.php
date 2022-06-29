@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="container">
-<h1>Зареєстровані користувачі, в т.ч. ті, що залишали телефони для зв'язку</h1>
+<h1>Зареєстровані користувачі, в т.ч. ті, що залишили телефони для зв'язку</h1>
 <?php
 $knownUsers = json_decode(file_get_contents(__DIR__ . '/../tmp/naubade-users.json'), true);
 $countUsers = count($knownUsers);
