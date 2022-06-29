@@ -7,33 +7,32 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Зареєстровані користувачі і їхні телефони</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
 </head>
 <body>
-<h1>Зареєстровані користувачі, що залишали телефони для зв'язку</h1>
+<h1>Зареєстровані користувачі, в т.ч. ті, що залишали телефони для зв'язку</h1>
 <?php
 $knownUsers = json_decode(file_get_contents(__DIR__ . '/../tmp/naubade-users.json'), true);
-$usersWithPhones = false;
+$countUsers = count($knownUsers);
 ?>
-<table>
+<table class="table table-responsive">
     <tr>
         <th>Ім'я</th><th>Прізвище</th><th>Телефон</th>
     </tr>
     <?php foreach ($knownUsers as $user) {
-        if (!empty($user['phone_number'])) {
-            $usersWithPhones = true;
     ?>
             <tr>
                 <td><?=$user['first_name']?></td>
                 <td><?=$user['last_name']?></td>
-                <td>+<?=$user['phone_number']?></td>
+                <td>+<?=$user['phone_number'] ?? '-'?></td>
             </tr>
     <?php
-        }
     }
 
-    if (!$usersWithPhones) {
+    if (0 === $countUsers) {
     ?>
-        <tr><td colspan="3">Жоден користувач не залишив телефон</td></tr>
+        <tr><td colspan="3">Жоден користувач не зареєстрований</td></tr>
     <?php
     }
     ?>
