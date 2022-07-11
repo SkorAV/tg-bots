@@ -1,30 +1,17 @@
 <?php
 
-class TgBot
+class TgBot extends Bot implements BotInterface
 {
     protected string $baseURL;
-    private LoggerInterface $logger;
-    private bool $debugMode = false;
     private array $data;
 
     const FORMAT_MARKDOWNV2 = 'MarkdownV2';
     const FORMAT_HTML = 'HTML';
     const FORMAT_DEFAULT = null;
 
-    public function __construct(string $botSecret, ?LoggerInterface $logger)
+    public function __construct(string $botSecret)
     {
         $this->baseURL = 'https://api.telegram.org/bot' . $botSecret . '/';
-        $this->logger = $logger;
-    }
-
-    public function debugModeEnable(): void
-    {
-        $this->debugMode = true;
-    }
-
-    public function debugModeDisable(): void
-    {
-        $this->debugMode = false;
     }
 
     public function getUpdate(): string
@@ -39,34 +26,34 @@ class TgBot
         return $request;
     }
 
-    public function message(stdClass $to): self
+    public function message($to): self
     {
         $this->data = ['chat_id' => $to->id];
 
         return $this;
     }
 
-    public function addText(string $message, ?array $entities = null, ?string $format = null): self
+    public function addText(string $message, ...$properties): self
     {
         $this->data['text'] = $message;
 
 
         if (!empty($entities)) {
-            $this->data['entities'] = json_encode($entities);
-        } else if (null !== $format) {
-            $this->data['parse_mode'] = $format;
+            $this->data['entities'] = json_encode($properties[0]);
+        } else if (null !== $properties[1]) {
+            $this->data['parse_mode'] = $properties[1];
         }
 
         return $this;
     }
 
-    public function addKeyboard(array $keyboard, bool $resize = true, bool $oneTime = false): self
+    public function addKeyboard(array $keyboard, ...$properties): self
     {
         if (!empty($keyboard)) {
             $this->data['reply_markup'] = json_encode([
                 'keyboard' => $keyboard,
-                'resize_keyboard' => $resize,
-                'one_time_keyboard' => $oneTime,
+                'resize_keyboard' => $properties[0],
+                'one_time_keyboard' => $properties[1],
             ]);
         }
 

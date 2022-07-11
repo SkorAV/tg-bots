@@ -13,7 +13,8 @@ try {
         ['s' => 'naubade_bot']
     )->fetch_row();
     $botData = json_decode($botData[0]);
-    $bot = new TgBot($botData->bot_secret, $logger);
+    $bot = new TgBot($botData->bot_secret);
+    $bot->addLogger($logger);
     $bot->debugModeEnable();
 
     $request = $bot->getUpdate();
@@ -24,7 +25,6 @@ try {
 
     if (!empty($update->message)) {
         $knownUser = !empty($knownUsers[$update->message->from->id]['first_name']);
-        $logger->log('User ' . $update->message->from->id . ' known: ' . ($knownUser ? 'yes' : 'no'));
 
         switch ($update->message->text) {
             case '/start':
@@ -37,7 +37,7 @@ try {
 Якщо ви бажаєте:
 - вирішувати складні економічні проблеми;
 - удосконалити володіння діловою іноземною мовою;
-- розвинути лідерські організаційні якості креативного та нестандарт-ного мислення
+- розвинути лідерські організаційні якості креативного та нестандартного мислення
 Тоді ми чекаємо саме на Вас!
 
 Скористайтесь меню нижче, щоб дізнатися більше.
