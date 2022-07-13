@@ -420,11 +420,6 @@ TXT;
                 ->addKeyboard($mainKeyboard)
                 ->send();
         }
-
-        if (!empty($update->callback_query)) {
-            $knownUser = !empty($knownUsers[$update->callback_query->from->id]['first_name']);
-            $messageId = $knownUsers[$update->callback_query->from->id]['lastMessageId'] ?? 0;
-        }
     }
 
     if ($knownUsersUpdated) {
