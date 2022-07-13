@@ -29,6 +29,7 @@ class ViberBot extends Bot implements BotInterface
             'sender' => [
                 'name' => 'Кафедра бізнес-аналітики',
             ],
+            'min_api_version' => 3,
         ];
 
         return $this;
@@ -46,7 +47,6 @@ class ViberBot extends Bot implements BotInterface
     {
         $this->data['keyboard'] = [
             "Type" => "keyboard",
-            "DefaultHeight" => !$properties[0],
             "Buttons" => $keyboard,
         ];
 
@@ -56,6 +56,18 @@ class ViberBot extends Bot implements BotInterface
     public function send(): ?stdClass
     {
         return $this->callAPI('send_message', json_encode($this->data));
+    }
+
+    public function welcomeMessage(): self
+    {
+        $this->data = [
+            'sender' => [
+                'name' => 'Кафедра бізнес-аналітики',
+            ],
+            'min_api_version' => 3,
+        ];
+
+        return $this;
     }
 
     private function callAPI(string $url, array|string $data): ?stdClass
