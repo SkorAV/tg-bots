@@ -19,8 +19,12 @@
     $knownUsers = json_decode(file_get_contents(__DIR__ . '/../tmp/naubade-users.json'), true);
     $countUsers = count($knownUsers);
     $index = 1;
+    $knownViberUsers = json_decode(file_get_contents(__DIR__ . '/../tmp/viber-naubade-users.json'), true);
+    $countViberUsers = count($knownUsers);
+    $indexViber = 1;
     ?>
     <h1>Зареєстровані користувачі, в т.ч. ті, що залишили телефони для зв'язку <span class="badge bg-primary"><?=$countUsers?></span></h1>
+    <h2>Telegram:</h2>
     <table class="table table-sm table-responsive">
         <tr>
             <th>#</th>
@@ -41,6 +45,35 @@
         }
 
         if (0 === $countUsers) {
+            ?>
+            <tr>
+                <td colspan="3">Жоден користувач не зареєстрований</td>
+            </tr>
+            <?php
+        }
+        ?>
+    </table>
+    <h2>Viber:</h2>
+    <table class="table table-sm table-responsive">
+        <tr>
+            <th>#</th>
+            <th>Аватар</th>
+            <th>Ім'я</th>
+            <th>Телефон</th>
+        </tr>
+        <?php foreach ($knownViberUsers as $user) {
+            ?>
+            <tr>
+                <td><?= $indexViber ?></td>
+                <td><?= $user['name'] ?></td>
+                <td><?= empty($user['avatar']) ? "" : "<img src={$user['avatar']} alt='{$user['name']}_avatar' width='25' height='25'>" ?></td>
+                <td>+<?= $user['phone_number'] ?? '-' ?></td>
+            </tr>
+            <?php
+            $indexViber++;
+        }
+
+        if (0 === $countViberUsers) {
             ?>
             <tr>
                 <td colspan="3">Жоден користувач не зареєстрований</td>
