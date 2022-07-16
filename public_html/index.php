@@ -20,7 +20,7 @@
     $countUsers = count($knownUsers);
     $index = 1;
     $knownViberUsers = json_decode(file_get_contents(__DIR__ . '/../tmp/viber-naubade-users.json'), true);
-    $countViberUsers = count($knownUsers);
+    $countViberUsers = count($knownViberUsers);
     $indexViber = 1;
     ?>
     <h1>Зареєстровані користувачі, в т.ч. ті, що залишили телефони для зв'язку</h1>
