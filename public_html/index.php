@@ -65,8 +65,8 @@
             ?>
             <tr>
                 <td><?= $indexViber ?></td>
-                <td><?= $user['name'] ?></td>
                 <td><?= empty($user['avatar']) ? "" : "<img src={$user['avatar']} alt='{$user['name']}_avatar' width='25' height='25'>" ?></td>
+                <td><?= $user['name'] ?></td>
                 <td>+<?= $user['phone_number'] ?? '-' ?></td>
             </tr>
             <?php
