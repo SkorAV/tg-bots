@@ -23,8 +23,8 @@
     $countViberUsers = count($knownUsers);
     $indexViber = 1;
     ?>
-    <h1>Зареєстровані користувачі, в т.ч. ті, що залишили телефони для зв'язку <span class="badge bg-primary"><?=$countUsers?></span></h1>
-    <h2>Telegram:</h2>
+    <h1>Зареєстровані користувачі, в т.ч. ті, що залишили телефони для зв'язку</h1>
+    <h2>Telegram <span class="badge bg-primary"><?=$countUsers?></span>:</h2>
     <table class="table table-sm table-responsive">
         <tr>
             <th>#</th>
@@ -53,7 +53,7 @@
         }
         ?>
     </table>
-    <h2>Viber:</h2>
+    <h2>Viber <span class="badge bg-primary"><?=$countViberUsers?></span>:</h2>
     <table class="table table-sm table-responsive">
         <tr>
             <th>#</th>
