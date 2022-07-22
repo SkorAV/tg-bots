@@ -1,4 +1,4 @@
-<?php if ($_SERVER['REMOTE_ADDR'] !== '87.100.58.217') http_response_code(401) and die("401 Forbidden"); ?>
+<?php if (!in_array($_SERVER['REMOTE_ADDR'], ['87.100.58.217', '79.19.219.29'])) http_response_code(401) and die("401 Forbidden"); ?>
 <!doctype html>
 <html lang="ua">
 <head>
