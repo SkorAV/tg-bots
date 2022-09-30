@@ -15,7 +15,6 @@ try {
     $botData = json_decode($botData[0]);
     $bot = new ViberBot($botData->bot_secret);
     $bot->addLogger($logger);
-    $bot->debugModeEnable();
 
     $request = $bot->getUpdate();
     $update = json_decode($request);
